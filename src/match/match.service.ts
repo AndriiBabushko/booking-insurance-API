@@ -49,7 +49,17 @@ export class MatchService {
       }
     }
 
-    pairs.sort((a, b) => b.score - a.score);
+    pairs.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      const dateA = new Date(a.booking.reservationDate).getTime();
+      const dateB = new Date(b.booking.reservationDate).getTime();
+      if (!isNaN(dateA) && !isNaN(dateB) && dateA !== dateB) {
+        return dateA - dateB;
+      }
+      return a.booking.id.localeCompare(b.booking.id);
+    });
     const usedBookings = new Set<string>();
     const usedClaims = new Set<string>();
     const results: MatchResult[] = [];
