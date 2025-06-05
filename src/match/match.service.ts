@@ -18,15 +18,34 @@ export class MatchService {
   match(bookings: Booking[], claims: Claim[]): MatchResult[] {
     const pairs: Candidate[] = [];
 
+    const groups = new Map<string, Booking[]>();
+    for (const booking of bookings) {
+      const day = this.extractDay(booking.reservationDate);
+      if (!day) {
+        continue;
+      }
+      const key = `${booking.patient}|${day}`;
+      const list = groups.get(key);
+      if (list) {
+        list.push(booking);
+      } else {
+        groups.set(key, [booking]);
+      }
+    }
+
     for (const claim of claims) {
-      for (const booking of bookings) {
-        if (
-          booking.patient === claim.patient &&
-          this.sameDate(booking.reservationDate, claim.bookingDate)
-        ) {
-          const { score, mismatch } = this.evaluate(booking, claim);
-          pairs.push({ booking, claim, score, mismatch });
-        }
+      const day = this.extractDay(claim.bookingDate);
+      if (!day) {
+        continue;
+      }
+      const key = `${claim.patient}|${day}`;
+      const candidates = groups.get(key);
+      if (!candidates) {
+        continue;
+      }
+      for (const booking of candidates) {
+        const { score, mismatch } = this.evaluate(booking, claim);
+        pairs.push({ booking, claim, score, mismatch });
       }
     }
 
@@ -87,8 +106,7 @@ export class MatchService {
       return false;
     }
     return (
-      dateA.toISOString().slice(0, 10) ===
-      dateB.toISOString().slice(0, 10)
+      dateA.toISOString().slice(0, 10) === dateB.toISOString().slice(0, 10)
     );
   }
 
@@ -102,5 +120,13 @@ export class MatchService {
       dateA.getUTCHours() === dateB.getUTCHours() &&
       dateA.getUTCMinutes() === dateB.getUTCMinutes()
     );
+  }
+
+  private extractDay(date: string): string | undefined {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return undefined;
+    }
+    return d.toISOString().slice(0, 10);
   }
 }
