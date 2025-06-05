@@ -59,16 +59,16 @@ export class MatchService {
     let score = 0;
     const mismatch: string[] = [];
 
-    if (this.testMap.get(booking.test) === claim.medicalServiceCode) {
-      score++;
-    } else {
-      mismatch.push('test');
-    }
-
     if (this.sameTime(booking.reservationDate, claim.bookingDate)) {
       score++;
     } else {
       mismatch.push('time');
+    }
+
+    if (this.testMap.get(booking.test) === claim.medicalServiceCode) {
+      score++;
+    } else {
+      mismatch.push('test');
     }
 
     if (booking.insurance === claim.insurance) {
@@ -81,15 +81,23 @@ export class MatchService {
   }
 
   private sameDate(a: string, b: string): boolean {
+    const dateA = new Date(a);
+    const dateB = new Date(b);
+    if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+      return false;
+    }
     return (
-      new Date(a).toISOString().slice(0, 10) ===
-      new Date(b).toISOString().slice(0, 10)
+      dateA.toISOString().slice(0, 10) ===
+      dateB.toISOString().slice(0, 10)
     );
   }
 
   private sameTime(a: string, b: string): boolean {
     const dateA = new Date(a);
     const dateB = new Date(b);
+    if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+      return false;
+    }
     return (
       dateA.getUTCHours() === dateB.getUTCHours() &&
       dateA.getUTCMinutes() === dateB.getUTCMinutes()
