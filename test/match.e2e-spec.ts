@@ -80,4 +80,11 @@ describe('MatchController (e2e)', () => {
       },
     ]);
   });
+
+  it('/match (POST) should return 400 for invalid body', async () => {
+    await request(app.getHttpServer())
+      .post('/match')
+      .send({ bookings: [{}], claims: [] })
+      .expect(400);
+  });
 });
