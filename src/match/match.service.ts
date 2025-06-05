@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Booking, Claim, MatchResult } from './dto';
+import { Booking, Claim, MatchResult, TestMapping } from './dto';
 
 interface Candidate {
   booking: Booking;
@@ -10,12 +10,30 @@ interface Candidate {
 
 @Injectable()
 export class MatchService {
-  private testMap = new Map<string, string>([
-    ['test_1', 'medical_service_1'],
-    ['test_2', 'medical_service_2'],
-  ]);
+  private readonly defaultTestMap = new Map<string, string>();
 
-  match(bookings: Booking[], claims: Claim[]): MatchResult[] {
+  constructor() {
+    const raw = process.env.TEST_MAPPING;
+    if (raw) {
+      try {
+        const arr: TestMapping[] = JSON.parse(raw);
+        this.defaultTestMap = new Map(
+          arr.map((m) => [m.test, m.medicalServiceCode]),
+        );
+      } catch {
+        this.defaultTestMap = new Map();
+      }
+    }
+  }
+
+  match(
+    bookings: Booking[],
+    claims: Claim[],
+    mapping?: TestMapping[],
+  ): MatchResult[] {
+    const testMap = mapping
+      ? new Map(mapping.map((m) => [m.test, m.medicalServiceCode]))
+      : this.defaultTestMap;
     const pairs: Candidate[] = [];
 
     const groups = new Map<string, Booking[]>();
@@ -44,7 +62,7 @@ export class MatchService {
         continue;
       }
       for (const booking of candidates) {
-        const { score, mismatch } = this.evaluate(booking, claim);
+        const { score, mismatch } = this.evaluate(booking, claim, testMap);
         pairs.push({ booking, claim, score, mismatch });
       }
     }
@@ -84,6 +102,7 @@ export class MatchService {
   private evaluate(
     booking: Booking,
     claim: Claim,
+    testMap: Map<string, string>,
   ): { score: number; mismatch: string[] } {
     let score = 0;
     const mismatch: string[] = [];
@@ -94,7 +113,7 @@ export class MatchService {
       mismatch.push('time');
     }
 
-    if (this.testMap.get(booking.test) === claim.medicalServiceCode) {
+    if (testMap.get(booking.test) === claim.medicalServiceCode) {
       score++;
     } else {
       mismatch.push('test');

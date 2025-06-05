@@ -1,8 +1,12 @@
 import { MatchService } from './match.service';
-import { Booking, Claim } from './dto';
+import { Booking, Claim, TestMapping } from './dto';
 
 describe('MatchService', () => {
   let service: MatchService;
+  const mapping: TestMapping[] = [
+    { test: 'test_1', medicalServiceCode: 'medical_service_1' },
+    { test: 'test_2', medicalServiceCode: 'medical_service_2' },
+  ];
 
   beforeEach(() => {
     service = new MatchService();
@@ -28,7 +32,7 @@ describe('MatchService', () => {
       },
     ];
 
-    const result = service.match(bookings, claims);
+    const result = service.match(bookings, claims, mapping);
     expect(result).toEqual([{ booking: 'b1', claim: 'c1' }]);
   });
 
@@ -52,7 +56,7 @@ describe('MatchService', () => {
       },
     ];
 
-    const result = service.match(bookings, claims);
+    const result = service.match(bookings, claims, mapping);
     expect(result).toEqual([
       { booking: 'b2', claim: 'c2', mismatch: ['time'] },
     ]);
@@ -78,7 +82,7 @@ describe('MatchService', () => {
       },
     ];
 
-    const result = service.match(bookings, claims);
+    const result = service.match(bookings, claims, mapping);
     expect(result).toEqual([
       { booking: 'b3', claim: 'c3', mismatch: ['test', 'insurance'] },
     ]);
@@ -104,7 +108,7 @@ describe('MatchService', () => {
       },
     ];
 
-    const result = service.match(bookings, claims);
+    const result = service.match(bookings, claims, mapping);
     expect(result).toEqual([]);
   });
 });

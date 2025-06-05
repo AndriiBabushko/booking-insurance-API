@@ -40,6 +40,14 @@ export class Claim {
   patient: string;
 }
 
+export class TestMapping {
+  @IsString()
+  test: string;
+
+  @IsString()
+  medicalServiceCode: string;
+}
+
 export class MatchRequestDto {
   @IsArray()
   @ValidateNested({ each: true })
@@ -50,6 +58,11 @@ export class MatchRequestDto {
   @ValidateNested({ each: true })
   @Type(() => Claim)
   claims: Claim[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TestMapping)
+  testMapping?: TestMapping[];
 }
 
 export interface MatchResult {

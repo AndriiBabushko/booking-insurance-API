@@ -23,6 +23,10 @@ describe('MatchController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/match')
       .send({
+        testMapping: [
+          { test: 'test_1', medicalServiceCode: 'medical_service_1' },
+          { test: 'test_2', medicalServiceCode: 'medical_service_2' },
+        ],
         bookings: [
           {
             id: 'booking_1',
