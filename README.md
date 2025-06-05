@@ -36,6 +36,8 @@ Tests:       4 passed, 4 total
 
 If every suite reports **passed**, the test task is functioning properly. For end-to-end validation run `npm run test:e2e` and ensure it completes without failures.
 
+Link to the [test task](https://smart-code.notion.site/API-1fbbe3d6ef178065ba2dff4aa3aae2b7)
+
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
